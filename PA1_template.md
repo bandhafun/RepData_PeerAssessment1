@@ -34,7 +34,7 @@ amd2 <- amd[!(is.na(amd$steps)|is.na(amd$date)|is.na(amd$interval)),]
 library("plyr")
 library("ggplot2")
 summ <- ddply(amd2, .(date),summarize,steps = sum(steps))
-png(file = "PA1_template_files/figure-html/Total Daily Steps.png")
+png(file = "Total Daily Steps.png")
 q <- qplot(steps, data=summ , geom = "histogram", xlab = "Daily Steps" , 
              ylab = "Frequency" ,main = "Total Daily Steps")+
       geom_histogram(aes(fill = ..count..)) + 
@@ -62,7 +62,7 @@ library("plyr")
 library("ggplot2")
 summ <- ddply(amd2, .(interval),summarize,steps = mean(steps))
 
-png(file = "PA1_template_files/figure-html/Average Daily Activity Pattern.png")
+png(file = "Average Daily Activity Pattern.png")
 
 q <- qplot(interval,steps,data = summ, geom = c("point","line"),xlab = "Daily Time Interval",ylab ="Average steps", main= "Average Daily Activity Pattern")
 print(q)
@@ -136,7 +136,7 @@ for (i in 1:nrow(newamd))
 
 library("ggplot2")
 summ <- ddply(newamd, .(date),summarize,steps = sum(steps))
-png(file = "PA1_template_files/figure-html/Imputed Data Total Daily Steps.png")
+png(file = "Imputed Data Total Daily Steps.png")
 q <- qplot(steps, data=summ , geom = "histogram", xlab = "Daily Steps" , 
              ylab = "Frequency" ,main = "Imputed Data :Total Daily Steps")+
       geom_histogram(aes(fill = ..count..)) + 

@@ -196,7 +196,8 @@ newmediansteps &lt;- as.character(round(median(summ$steps),2))</code></pre>
 newamd$days &lt;- weekdays(newamd$date)
 
 # classify the days of the week as weekday and weekends
-x &lt;- data.frame( days = c(&quot;Sunday&quot;, &quot;Monday&quot;,&quot;Tuesday&quot;, &quot;Wednesday&quot;, &quot;Thursday&quot;, &quot;Friday&quot;, &quot;Saturday&quot;), define = c(&quot;weekend&quot;, &quot;weekday&quot;, &quot;weekday&quot;, &quot;weekday&quot;, &quot;weekday&quot;, &quot;weekday&quot;,&quot;weekend&quot; ) )
+x &lt;- data.frame( days = c(&quot;Sunday&quot;, &quot;Monday&quot;,&quot;Tuesday&quot;, &quot;Wednesday&quot;, &quot;Thursday&quot;, &quot;Friday&quot; ,&quot;Saturday&quot;),
+define = c(&quot;weekend&quot;, &quot;weekday&quot;, &quot;weekday&quot;, &quot;weekday&quot;, &quot;weekday&quot;, &quot;weekday&quot;,&quot;weekend&quot; ) )
 newamd &lt;- merge(newamd,x)
 
 #summarise and plot

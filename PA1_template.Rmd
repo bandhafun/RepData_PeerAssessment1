@@ -120,7 +120,8 @@ library("plyr")
 newamd$days <- weekdays(newamd$date)
 
 # classify the days of the week as weekday and weekends
-x <- data.frame( days = c("Sunday", "Monday","Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"), define = c("weekend", "weekday", "weekday", "weekday", "weekday", "weekday","weekend" ) )
+x <- data.frame( days = c("Sunday", "Monday","Tuesday", "Wednesday", "Thursday", "Friday" ,"Saturday"),
+define = c("weekend", "weekday", "weekday", "weekday", "weekday", "weekday","weekend" ) )
 newamd <- merge(newamd,x)
 
 #summarise and plot

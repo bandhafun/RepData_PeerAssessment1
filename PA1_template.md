@@ -162,7 +162,7 @@ summ <- ddply(newamd, .(interval,define), summarize , steps = mean(steps))
 
 
 library(lattice)
-xyplot(steps ~ interval | define ,data= summ ,layout = c(1,2), type = c("p","l"),pch= 16 ,col = "green") 
+xyplot(steps ~ interval | define ,data= summ ,layout = c(1,2), type = c("p","l"),pch= 16 ,col = "red") 
 ```
 
 ![plot of chunk weekend and weekdays ](PA1_template_files/figure-html/weekend and weekdays .png) 

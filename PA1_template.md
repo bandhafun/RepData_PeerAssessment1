@@ -1,60 +1,86 @@
 # Reproducible Research: Peer Assessment 1
+## Introduction
 
-```r
-# set global chunk options: 
-library(knitr)
-opts_chunk$set( cache=TRUE , cache.path = 'PA1_template_files/', fig.path='PA1_template_files/figure-html/') 
-```
+>It is now possible to collect a large amount of data about personal movement using activity monitoring devices such as a Fitbit, Nike Fuelband, or Jawbone Up. These type of devices are part of the "quantified self" movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks.  
+>This assignment makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
 
 ## Loading and preprocessing the data
+    
+>This segment is for loading the data from the activity.zip file and processing it into a analytic data.Please follow comments in the code for better understanding.
 
 
 ```r
-# Get Data
-setwd("activity")
+# unzip the file
+unzip("activity.zip")
+# Get Data from csv file
 amd <- read.csv("activity.csv" , header = TRUE)
-setwd("..")
-
-# Change date class from factor of strings to DATE class  
+ 
+# Change date class from factor of strings to DATE class:This helps us manupulate date field  
 levels(amd$date) <- as.Date(levels(amd$date))
 amd$date <- as.Date(amd$date)
 
-#change interval class from integer to factor
-amd$interval <- as.factor(amd$interval)
-
-#Remove NA values in amd2
-amd2 <- amd[!(is.na(amd$steps)|is.na(amd$date)|is.na(amd$interval)),]
+# Sample the data 
+nall<- nrow(amd)
+head(amd)
 ```
 
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
+```
+
+```r
+#Remove NA values in amd2 and sample the data
+
+amd2 <- amd[!(is.na(amd$steps)|is.na(amd$date)|is.na(amd$interval)),]
+nnona <-  nrow(amd2)
+head(amd2)
+```
+
+```
+##     steps       date interval
+## 289     0 2012-10-02        0
+## 290     0 2012-10-02        5
+## 291     0 2012-10-02       10
+## 292     0 2012-10-02       15
+## 293     0 2012-10-02       20
+## 294     0 2012-10-02       25
+```
+>The number total number of records is 17568 and total number of non NA records is 15264.
+
 ## What is mean total number of steps taken per day?
+>In this part of the analysis we see pattern of daily activity
 
 
 ```r
 # summarize and plot
 library("plyr")
 library("ggplot2")
+
 summ <- ddply(amd2, .(date),summarize,steps = sum(steps))
-png(file = "Total Daily Steps.png")
-q <- qplot(steps, data=summ , geom = "histogram", xlab = "Daily Steps" , 
-             ylab = "Frequency" ,main = "Total Daily Steps")+
-      geom_histogram(aes(fill = ..count..)) + 
-      scale_fill_gradient("Count", low = "green", high = "red")
-print(q)
-dev.off()
+qplot(steps,data = summ,geom = "histogram",xlab = "Daily Steps", ylab = "Frequency",
+      main = "Pattern of total daily steps" , ylims = 10 )+
+    geom_histogram(aes(fill = ..count..)) + 
+    scale_fill_gradient("Count", low = "green", high = "red")
 ```
 
-```
-## pdf 
-##   2
-```
+![plot of chunk Total Daily Steps](PA1_template_files/figure-html/Total Daily Steps.png) 
 
 ```r
-meansteps <- mean(summ$steps)
-mediansteps <- median(summ$steps)
+# Find mean and median daily steps
+meansteps <- as.character(round(mean(summ$steps),2))
+mediansteps <- as.character(round(median(summ$steps),2))
 ```
-The mean of total number of steps 1.0766 &times; 10<sup>4</sup> and meadian is 10765
+>The mean of total number of steps 10766.19 and meadian is 10765
 
 ## What is the average daily activity pattern?
+>In this part we analyse how activity is distributed in an average day.
+
 
 ```r
 # summarize and plot
@@ -62,62 +88,29 @@ library("plyr")
 library("ggplot2")
 summ <- ddply(amd2, .(interval),summarize,steps = mean(steps))
 
-png(file = "Average Daily Activity Pattern.png")
 
-q <- qplot(interval,steps,data = summ, geom = c("point","line"),xlab = "Daily Time Interval",ylab ="Average steps", main= "Average Daily Activity Pattern")
-print(q)
-```
-
-```
-## geom_path: Each group consist of only one observation. Do you need to adjust the group aesthetic?
+qplot(interval,steps,data = summ, geom = c("point","path"),
+      xlab = "Daily Time Interval",ylab ="Average steps", 
+      main= "Average Daily Activity Pattern")+
+    geom_line(color = "red", size = 2) +geom_point(color = "green")
 ```
 
-```r
-dev.off()
-```
-
-```
-## pdf 
-##   2
-```
+![plot of chunk Average Daily Steps](PA1_template_files/figure-html/Average Daily Steps.png) 
 
 ```r
 chk <- summ$steps == max(summ$steps)
-summ[chk,]
+x <- summ[chk,1]
 ```
+>Maximum activity happens during 835 minutes.
 
-```
-##     interval steps
-## 104      835 206.2
-```
 ## Imputing missing values
-
-
-```r
-print(c("number of NA in steps :", sum(is.na(amd$steps))))
-```
-
-```
-## [1] "number of NA in steps :" "2304"
-```
+>In this part we find the missing values and impute them to be the average values in the time interval. Further we check the daily activity pattern. 
 
 ```r
-print(c("number of NA in date :", sum(is.na(amd$date))))
-```
+nastep <-  sum(is.na(amd$steps))
+nadate <- sum(is.na(amd$date))
+naint <- sum(is.na(amd$interval))
 
-```
-## [1] "number of NA in date :" "0"
-```
-
-```r
-print(c("number of NA in interval :", sum(is.na(amd$interval))))
-```
-
-```
-## [1] "number of NA in interval :" "0"
-```
-
-```r
 print("Impute principle for steps : Average daily interval activity" )
 ```
 
@@ -136,53 +129,39 @@ for (i in 1:nrow(newamd))
 
 library("ggplot2")
 summ <- ddply(newamd, .(date),summarize,steps = sum(steps))
-png(file = "Imputed Data Total Daily Steps.png")
-q <- qplot(steps, data=summ , geom = "histogram", xlab = "Daily Steps" , 
-             ylab = "Frequency" ,main = "Imputed Data :Total Daily Steps")+
+ qplot(steps, data=summ , geom = "histogram", xlab = "Daily Steps" , 
+         ylab = "Frequency" ,main = "Imputed Data :Total Daily Steps")+
       geom_histogram(aes(fill = ..count..)) + 
       scale_fill_gradient("Count", low = "green", high = "red")
-print(q)
 ```
 
-```
-## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
-## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
-```
+![plot of chunk imputing missing value ](PA1_template_files/figure-html/imputing missing value .png) 
 
 ```r
-dev.off()
+newmeansteps <- as.character(round(mean(summ$steps),2))
+newmediansteps <- as.character(round(median(summ$steps),2))
 ```
-
-```
-## pdf 
-##   2
-```
-
-```r
-meansteps <- mean(summ$steps)
-mediansteps <- median(summ$steps)
-```
-The mean of total number of steps 1.0766 &times; 10<sup>4</sup> and meadian is 1.0766 &times; 10<sup>4</sup>
+>Number of NA in steps = 2304, in date = 0 and in intervals = 0.  
+>The mean of total number of steps 10766.19 and meadian is 10766.19
 
 ## Are there differences in activity patterns between weekdays and weekends?
+>In this section we see if there is difference in activity pattern in weekdays and weekends.
 
 ```r
 library("plyr")
-summ <- ddply(newamd,.(date,days = weekdays(date)),summarize,steps = sum(steps))
-summ <- ddply(summ, .(days),summarize,steps = mean(steps))
-x <- data.frame( num =1:7 ,days = c("Sunday", "Monday","Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
-summ <- merge(summ,x)
-summ <- summ[order(summ$num),]
-summ[,1:2]
+#add a column to find the day of the week
+newamd$days <- weekdays(newamd$date)
+
+# classify the days of the week as weekday and weekends
+x <- data.frame( days = c("Sunday", "Monday","Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"), define = c("weekend", "weekday", "weekday", "weekday", "weekday", "weekday","weekend" ) )
+newamd <- merge(newamd,x)
+
+#summarise and plot
+summ <- ddply(newamd, .(interval,define), summarize , steps = mean(steps))
+
+
+library(lattice)
+xyplot(steps ~ interval | define ,data= summ ,layout = c(1,2), type = c("p","l"),pch= 16 ,col = "green") 
 ```
 
-```
-##        days steps
-## 4    Sunday 12089
-## 2    Monday 10151
-## 6   Tuesday  8950
-## 7 Wednesday 11677
-## 5  Thursday  8496
-## 1    Friday 12006
-## 3  Saturday 12314
-```
+![plot of chunk weekend and weekdays ](PA1_template_files/figure-html/weekend and weekdays .png) 
